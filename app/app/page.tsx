@@ -1,65 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { listJobs } from "./actions/job-actions";
-import { listResumes } from "./actions/resume-actions";
+import { useState } from "react";
 import { JobsTable } from "./ui/jobs-table";
 import { JobDrawer } from "./ui/job-drawer";
 import { ResumeDialog } from "./ui/resume-dialog";
-import { useRouter } from "next/navigation";
-
-type Job = {
-  id: string;
-  company: string;
-  role: string;
-  location: string | null;
-  url: string | null;
-  status: string;
-  appliedDate: Date | null;
-  salary: string | null;
-  notes: string | null;
-  resumeVersionId: string | null;
-  lastTouchedAt: Date;
-  createdAt: Date;
-  resumeName: string | null;
-};
-
-type Resume = {
-  id: string;
-  name: string;
-  url: string;
-};
+import { useJobs, type Job } from "./hooks/use-jobs";
+import { useResumes } from "./hooks/use-resumes";
 
 export default function AppPage() {
-  const router = useRouter();
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [resumes, setResumes] = useState<Resume[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: jobs = [], isLoading: jobsLoading } = useJobs();
+  const { data: resumes = [], isLoading: resumesLoading } = useResumes();
   const [jobDrawerOpen, setJobDrawerOpen] = useState(false);
   const [resumeDialogOpen, setResumeDialogOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
-  const fetchData = async () => {
-    try {
-      const [jobsData, resumesData] = await Promise.all([
-        listJobs(),
-        listResumes(),
-      ]);
-      setJobs(jobsData as Job[]);
-      setResumes(resumesData as Resume[]);
-    } catch (error) {
-      console.error("Failed to fetch data:", error);
-      // If auth error, redirect to login
-      router.push("/login");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const loading = jobsLoading || resumesLoading;
 
   const handleAddJob = () => {
     setSelectedJob(null);
@@ -74,7 +29,6 @@ export default function AppPage() {
   const handleCloseJobDrawer = () => {
     setJobDrawerOpen(false);
     setSelectedJob(null);
-    fetchData();
   };
 
   const handleCreateResume = () => {
@@ -83,7 +37,6 @@ export default function AppPage() {
 
   const handleCloseResumeDialog = () => {
     setResumeDialogOpen(false);
-    fetchData();
   };
 
   if (loading) {
@@ -115,7 +68,7 @@ export default function AppPage() {
         </div>
       )}
 
-      <JobsTable jobs={jobs} onAddJob={handleAddJob} onEditJob={handleEditJob} onRefresh={fetchData} />
+      <JobsTable jobs={jobs} onAddJob={handleAddJob} onEditJob={handleEditJob} />
 
       <JobDrawer
         open={jobDrawerOpen}

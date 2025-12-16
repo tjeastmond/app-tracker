@@ -1,13 +1,12 @@
 "use client";
 
-import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ResumeVersionCreateSchema,
   type ResumeVersionCreate,
 } from "@/lib/validators";
-import { createResume } from "../actions/resume-actions";
+import { useCreateResume } from "../hooks/use-resumes";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +31,7 @@ type ResumeDialogProps = {
 };
 
 export function ResumeDialog({ open, onClose }: ResumeDialogProps) {
-  const [isPending, startTransition] = useTransition();
+  const createResumeMutation = useCreateResume();
 
   const form = useForm<ResumeVersionCreate>({
     resolver: zodResolver(ResumeVersionCreateSchema),
@@ -43,15 +42,16 @@ export function ResumeDialog({ open, onClose }: ResumeDialogProps) {
   });
 
   const onSubmit = (data: ResumeVersionCreate) => {
-    startTransition(async () => {
-      try {
-        await createResume(data);
+    createResumeMutation.mutate(data, {
+      onSuccess: () => {
         form.reset();
         onClose();
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to create resume";
+      },
+      onError: (error) => {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to create resume";
         alert(errorMessage);
-      }
+      },
     });
   };
 
@@ -104,12 +104,12 @@ export function ResumeDialog({ open, onClose }: ResumeDialogProps) {
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                disabled={isPending}
+                disabled={createResumeMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create"}
+              <Button type="submit" disabled={createResumeMutation.isPending}>
+                {createResumeMutation.isPending ? "Creating..." : "Create"}
               </Button>
             </div>
           </form>

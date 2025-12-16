@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
-import { updateJob } from "../actions/job-actions";
+import { useUpdateJob, type Job } from "../hooks/use-jobs";
+import type { JobCreate } from "@/lib/validators";
 import {
   Table,
   TableBody,
@@ -23,27 +24,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search } from "lucide-react";
 
-type Job = {
-  id: string;
-  company: string;
-  role: string;
-  location: string | null;
-  url: string | null;
-  status: string;
-  appliedDate: Date | null;
-  salary: string | null;
-  notes: string | null;
-  resumeVersionId: string | null;
-  lastTouchedAt: Date;
-  createdAt: Date;
-  resumeName: string | null;
-};
-
 type JobsTableProps = {
   jobs: Job[];
   onAddJob: () => void;
   onEditJob: (job: Job) => void;
-  onRefresh: () => void;
 };
 
 const statusOptions = [
@@ -68,10 +52,10 @@ const statusColors: Record<string, string> = {
   GHOSTED: "bg-gray-700",
 };
 
-export function JobsTable({ jobs, onAddJob, onEditJob, onRefresh }: JobsTableProps) {
+export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [isPending, startTransition] = useTransition();
+  const updateJobMutation = useUpdateJob();
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
@@ -85,25 +69,25 @@ export function JobsTable({ jobs, onAddJob, onEditJob, onRefresh }: JobsTablePro
     const job = jobs.find((j) => j.id === jobId);
     if (!job) return;
 
-    startTransition(async () => {
-      try {
-        await updateJob({
-          id: job.id,
-          company: job.company,
-          role: job.role,
-          location: job.location,
-          url: job.url,
-          status: newStatus,
-          appliedDate: job.appliedDate?.toISOString(),
-          salary: job.salary,
-          notes: job.notes,
-          resumeVersionId: job.resumeVersionId,
-        });
-        onRefresh();
-      } catch (error) {
-        console.error("Failed to update status:", error);
+    updateJobMutation.mutate(
+      {
+        id: job.id,
+        company: job.company,
+        role: job.role,
+        location: job.location || undefined,
+        url: job.url || undefined,
+        status: newStatus as JobCreate["status"],
+        appliedDate: job.appliedDate?.toISOString(),
+        salary: job.salary || undefined,
+        notes: job.notes || undefined,
+        resumeVersionId: job.resumeVersionId || undefined,
+      },
+      {
+        onError: (error) => {
+          console.error("Failed to update status:", error);
+        },
       }
-    });
+    );
   };
 
   if (jobs.length === 0) {
@@ -174,7 +158,7 @@ export function JobsTable({ jobs, onAddJob, onEditJob, onRefresh }: JobsTablePro
                   <Select
                     value={job.status}
                     onValueChange={(value) => handleStatusChange(job.id, value)}
-                    disabled={isPending}
+                    disabled={updateJobMutation.isPending}
                   >
                     <SelectTrigger className="w-[160px]">
                       <Badge className={statusColors[job.status]}>
