@@ -2,7 +2,7 @@
 
 import { requireAppUserId } from "@/lib/require-user";
 import { db } from "@/lib/db";
-import { jobApplications, resumeVersions, userEntitlements } from "@/drizzle/schema";
+import { jobApplications, resumeVersions, userEntitlements } from "@drizzle/schema";
 import { JobCreateSchema, JobUpdateSchema } from "@/lib/validators";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";

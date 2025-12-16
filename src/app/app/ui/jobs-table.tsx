@@ -94,7 +94,7 @@ export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <p className="text-muted-foreground mb-4">No jobs tracked yet</p>
-        <Button onClick={onAddJob}>
+        <Button onClick={onAddJob} className="bg-green-600 hover:bg-green-700">
           <Plus className="mr-2 h-4 w-4" />
           Add Your First Job
         </Button>
@@ -127,7 +127,7 @@ export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
             ))}
           </SelectContent>
         </Select>
-        <Button onClick={onAddJob}>
+        <Button onClick={onAddJob} className="bg-green-600 hover:bg-green-700">
           <Plus className="mr-2 h-4 w-4" />
           Add Job
         </Button>

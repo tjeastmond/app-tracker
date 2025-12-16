@@ -2,7 +2,7 @@
 
 import { requireAppUserId } from "@/lib/require-user";
 import { db } from "@/lib/db";
-import { resumeVersions, jobApplications } from "@/drizzle/schema";
+import { resumeVersions, jobApplications } from "@drizzle/schema";
 import {
   ResumeVersionCreateSchema,
   ResumeVersionUpdateSchema,

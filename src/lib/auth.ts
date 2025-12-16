@@ -5,7 +5,7 @@ import Resend from "next-auth/providers/resend";
 import Credentials from "next-auth/providers/credentials";
 import { db } from "./db";
 import { env } from "./env";
-import { users, userEntitlements, userSettings } from "@/drizzle/schema";
+import { users, userEntitlements, userSettings } from "@drizzle/schema";
 import { eq } from "drizzle-orm";
 
 const providers: Provider[] = [
