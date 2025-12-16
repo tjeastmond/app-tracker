@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { NavBar } from "@/components/nav-bar";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Job Tracker",
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <NavBar />
-        <main>{children}</main>
+        <SessionProvider>
+          <NavBar />
+          <main>{children}</main>
+        </SessionProvider>
       </body>
     </html>
   );
