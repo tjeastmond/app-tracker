@@ -12,7 +12,8 @@
     "db:start": "docker compose up -d",
     "db:stop": "docker compose down",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx scripts/migrate.ts"
+    "db:migrate": "tsx scripts/migrate.ts",
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhooks/stripe"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.11.1",
@@ -23,6 +24,7 @@
     "@radix-ui/react-label": "^2.1.8",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
+    "@stripe/stripe-js": "^8.6.0",
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-query-devtools": "^5.91.1",
     "class-variance-authority": "^0.7.1",
@@ -37,6 +39,7 @@
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.68.0",
     "resend": "^6.6.0",
+    "stripe": "^20.0.0",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.2.1"
   },

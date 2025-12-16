@@ -2,11 +2,12 @@
 
 import { requireAppUserId } from "@/lib/require-user";
 import { db } from "@/lib/db";
-import { jobApplications, resumeVersions, userEntitlements, reminders } from "@drizzle/schema";
+import { jobApplications, resumeVersions, reminders } from "@drizzle/schema";
 import { JobCreateSchema, JobUpdateSchema } from "@/lib/validators";
 import { eq, and, desc, sql, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getJobsNeedingFollowup as getJobsNeedingFollowupLib } from "@/lib/reminder-generator";
+import { isPaidUser } from "@/lib/entitlements";
 
 export async function listJobs() {
   const userId = await requireAppUserId();
@@ -42,19 +43,17 @@ export async function createJob(input: unknown) {
   const userId = await requireAppUserId();
   const data = JobCreateSchema.parse(input);
 
-  // Check free tier limit
-  const entitlement = await db.query.userEntitlements.findFirst({
-    where: eq(userEntitlements.userId, userId),
-  });
-
-  if (entitlement?.plan === "FREE") {
+  // Check free tier limit (10 jobs max for free users)
+  const isPaid = await isPaidUser(userId);
+  
+  if (!isPaid) {
     const jobCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(jobApplications)
       .where(eq(jobApplications.userId, userId));
 
     if (jobCount[0].count >= 10) {
-      throw new Error("Free tier limit reached (10 jobs max)");
+      throw new Error("Free tier limit reached (10 jobs max). Upgrade to add unlimited jobs.");
     }
   }
 
