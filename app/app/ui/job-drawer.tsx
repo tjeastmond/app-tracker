@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useTransition } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { JobCreateSchema, type JobCreate } from "@/lib/validators";
-import { createJob, updateJob, deleteJob } from "../actions/job-actions";
+import { useCreateJob, useUpdateJob, useDeleteJob } from "../hooks/use-jobs";
 import {
   Sheet,
   SheetContent,
@@ -77,8 +77,15 @@ export function JobDrawer({
   resumes,
   onCreateResume,
 }: JobDrawerProps) {
-  const [isPending, startTransition] = useTransition();
+  const createJobMutation = useCreateJob();
+  const updateJobMutation = useUpdateJob();
+  const deleteJobMutation = useDeleteJob();
   const isEdit = !!job;
+
+  const isPending =
+    createJobMutation.isPending ||
+    updateJobMutation.isPending ||
+    deleteJobMutation.isPending;
 
   const form = useForm<JobCreate>({
     resolver: zodResolver(JobCreateSchema),
@@ -96,54 +103,82 @@ export function JobDrawer({
   });
 
   useEffect(() => {
-    if (open && job) {
-      form.reset({
-        company: job.company,
-        role: job.role,
-        location: job.location || "",
-        url: job.url || "",
-        status: job.status as JobCreate["status"],
-        appliedDate: job.appliedDate
-          ? new Date(job.appliedDate).toISOString().split("T")[0]
-          : "",
-        salary: job.salary || "",
-        notes: job.notes || "",
-        resumeVersionId: job.resumeVersionId || undefined,
-      });
+    if (open) {
+      if (job) {
+        form.reset({
+          company: job.company,
+          role: job.role,
+          location: job.location || "",
+          url: job.url || "",
+          status: job.status as JobCreate["status"],
+          appliedDate: job.appliedDate
+            ? new Date(job.appliedDate).toISOString().split("T")[0]
+            : "",
+          salary: job.salary || "",
+          notes: job.notes || "",
+          resumeVersionId: job.resumeVersionId || undefined,
+        });
+      } else {
+        form.reset({
+          company: "",
+          role: "",
+          location: "",
+          url: "",
+          status: "SAVED",
+          appliedDate: "",
+          salary: "",
+          notes: "",
+          resumeVersionId: undefined,
+        });
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, job]);
 
   const onSubmit = (data: JobCreate) => {
-    startTransition(async () => {
-      try {
-        if (isEdit) {
-          await updateJob({ ...data, id: job.id });
-        } else {
-          await createJob(data);
+    if (isEdit) {
+      updateJobMutation.mutate(
+        { ...data, id: job.id },
+        {
+          onSuccess: () => {
+            onClose();
+            form.reset();
+          },
+          onError: (error) => {
+            const errorMessage =
+              error instanceof Error ? error.message : "Failed to save job";
+            alert(errorMessage);
+          },
         }
-        onClose();
-        form.reset();
-      } catch (error) {
-        // Show error to user
-        const errorMessage = error instanceof Error ? error.message : "Failed to save job";
-        alert(errorMessage);
-      }
-    });
+      );
+    } else {
+      createJobMutation.mutate(data, {
+        onSuccess: () => {
+          onClose();
+          form.reset();
+        },
+        onError: (error) => {
+          const errorMessage =
+            error instanceof Error ? error.message : "Failed to save job";
+          alert(errorMessage);
+        },
+      });
+    }
   };
 
   const handleDelete = () => {
     if (!job) return;
     if (!confirm("Are you sure you want to delete this job?")) return;
 
-    startTransition(async () => {
-      try {
-        await deleteJob(job.id);
+    deleteJobMutation.mutate(job.id, {
+      onSuccess: () => {
         onClose();
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to delete job";
+      },
+      onError: (error) => {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to delete job";
         alert(errorMessage);
-      }
+      },
     });
   };
 
