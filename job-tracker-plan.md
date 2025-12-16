@@ -4,6 +4,26 @@ This document captures the end-to-end milestone plan, tech/services, data model,
 
 ---
 
+## Current Status (Updated: December 16, 2024)
+
+**✅ PHASE 3 COMPLETE** - Reminder system is fully functional!
+
+The application now has a complete reminder and follow-up system:
+- "Needs follow-up" filter in the job table UI
+- "Mark as contacted" action to update last touched date and cancel reminders
+- Automated reminder generation via cron job (daily)
+- Email reminders sent via Resend for overdue follow-ups
+- Only available for paid users (PAID_LIFETIME plan)
+
+**Next up:** PHASE 4 - Stripe Lifetime + Gating
+- This phase will add Stripe integration for lifetime purchases
+- Enable the reminder system and other premium features for paying users
+
+**Outstanding:**
+- Upgrade CTA page stub (can be done alongside Phase 4 Stripe integration)
+
+---
+
 ## Tech Stack & Services
 
 ### Hosting / Runtime
@@ -29,87 +49,106 @@ This document captures the end-to-end milestone plan, tech/services, data model,
 
 ## Milestone / Phase Model
 
-### PHASE 0 — Repo + Baseline (½–1 day)
+### PHASE 0 — Repo + Baseline (½–1 day) ✅ COMPLETE
 **Goal:** App boots, deploys, and is ready for real work.
-- [ ] Next.js App Router + TypeScript
-- [ ] Tailwind + shadcn/ui
-- [ ] `/app` layout shell (top bar + main)
-- [ ] Env validation module (Zod)
-- [ ] Deploy to Vercel (baseline)
-- [ ] Setup local Postgres (Docker) for development
+- [x] Next.js App Router + TypeScript
+- [x] Tailwind + shadcn/ui
+- [x] `/app` layout shell (top bar + main)
+- [x] Env validation module (Zod)
+- [x] Deploy to Vercel (baseline)
+- [x] Setup local Postgres (Docker) for development
 
 **Deliverable:** deployed skeleton app.
 
 ---
 
-### PHASE 1 — Auth + Database + Scaffolding (1–2 days)
+### PHASE 1 — Auth + Database + Scaffolding (1–2 days) ✅ COMPLETE
 **Goal:** Users can log in; DB is wired; bootstrap rows exist.
 
 **Auth.js**
-- [ ] Resend provider configured
-- [ ] Login page (`/login`)
-- [ ] Protected routes (`/app/**`)
-- [ ] Session access in server components
-- [ ] Logout
-- [ ] Quick login for development
+- [x] Resend provider configured
+- [x] Login page (`/login`)
+- [x] Protected routes (`/app/**`)
+- [x] Session access in server components
+- [x] Logout
+- [x] Quick login for development
 
 **Database**
-- [ ] Create Vercel Postgres instance
-- [ ] Set `DATABASE_URL`
-- [ ] Add Drizzle schema + migrations
-- [ ] Add db client module (`db.ts`)
+- [x] Create Vercel Postgres instance
+- [x] Set `DATABASE_URL`
+- [x] Add Drizzle schema + migrations
+- [x] Add db client module (`db.ts`)
 
 **Bootstrap on first login**
-- [ ] Ensure `users` row exists for session email
-- [ ] Ensure `user_settings` row exists
-- [ ] Ensure `user_entitlements` row exists (FREE)
+- [x] Ensure `users` row exists for session email
+- [x] Ensure `user_settings` row exists
+- [x] Ensure `user_entitlements` row exists (FREE)
 
 **Deliverable:** login works → user exists → app can query DB by user.
 
 ---
 
-### PHASE 2 — MVP CRUD + Table UX (2–4 days)
+### PHASE 2 — MVP CRUD + Table UX (2–4 days) ✅ COMPLETE
 **Goal:** A logged-in user can track job applications end-to-end.
 
 **Job applications**
-- [ ] Create job (server action)
-- [ ] Edit job (server action)
-- [ ] Delete job (server action)
-- [ ] Status change inline (server action)
-- [ ] `lastTouchedAt` updates on any change
-- [ ] Validation via Zod (shared schema)
+- [x] Create job (server action)
+- [x] Edit job (server action)
+- [x] Delete job (server action)
+- [x] Status change inline (server action)
+- [x] `lastTouchedAt` updates on any change
+- [x] Validation via Zod (shared schema)
 
 **Resume versions**
-- [ ] Create version (name only)
-- [ ] Edit version name
-- [ ] Attach version to job application
+- [x] Create version (name only)
+- [x] Edit version name
+- [x] Attach version to job application
 
 **Views**
-- [ ] Table list (default sort: `lastTouchedAt desc`)
-- [ ] Status filter
-- [ ] Quick search (company/role/location)
-- [ ] Row click → **side drawer** (create/edit)
-- [ ] Empty states
-- [ ] Pagination (offset is fine for MVP)
+- [x] Table list (default sort: `lastTouchedAt desc`)
+- [x] Status filter
+- [x] Quick search (company/role/location)
+- [x] Row click → **side drawer** (create/edit)
+- [x] Empty states
+- [x] Pagination (offset is fine for MVP)
 
 **Free tier enforcement (light)**
-- [ ] Count jobs for user
-- [ ] If FREE and >=10, block create (server-side)
+- [x] Count jobs for user
+- [x] If FREE and >=10, block create (server-side)
 - [ ] Upgrade CTA page stub
 
 **Deliverable:** a real usable tracker.
 
+**Notes:**
+- Migrated to TanStack Query for optimistic updates and better data fetching
+- Added dark mode support
+- Implemented logout functionality
+- Migrated from npm to pnpm
+
 ---
 
-### PHASE 3 — Paid Value (Follow-ups + reminders) (2–4 days)
+### PHASE 3 — Paid Value (Follow-ups + reminders) (2–4 days) ✅ COMPLETE
 **Goal:** The product becomes worth paying for.
 
-- [ ] “Needs follow-up” computed view:
+- [x] “Needs follow-up” computed view:
   - Applied: `now - lastTouchedAt >= appliedFollowupDays`
   - Interview statuses: `>= interviewFollowupDays`
-- [ ] Reminder generator cron endpoint (idempotent)
-- [ ] Resend emails for reminders
-- [ ] “Mark contacted” action (touches job + cancels reminders)
+- [x] Reminder generator cron endpoint (idempotent)
+- [x] Resend emails for reminders
+- [x] “Mark contacted” action (touches job + cancels reminders)
+- [x] Updated schema with `appliedFollowupDays`, `interviewFollowupDays`, and `remindersEnabled`
+- [x] Added `cancelledAt` to reminders table
+- [x] Created `/api/cron/generate-reminders` endpoint
+- [x] Created `/api/cron/send-reminders` endpoint
+- [x] Configured Vercel Cron jobs in `vercel.json`
+- [x] Added “Needs Follow-up” filter button in UI
+- [x] Added “Mark as Contacted” button in job drawer
+
+**Notes:**
+- Reminders are only generated and sent for users with PAID_LIFETIME plan
+- Cron jobs run daily: generate at 9am, send at 10am UTC
+- Reminder generator is idempotent - won't create duplicate reminders
+- Marking a job as contacted cancels all pending reminders for that job
 
 ---
 

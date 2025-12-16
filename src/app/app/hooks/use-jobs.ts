@@ -6,6 +6,7 @@ import {
   createJob,
   updateJob,
   deleteJob,
+  markJobContacted,
 } from "../actions/job-actions";
 import type { JobCreate } from "@/lib/validators";
 import { useRouter } from "next/navigation";
@@ -71,6 +72,17 @@ export function useDeleteJob() {
 
   return useMutation({
     mutationFn: (id: string) => deleteJob(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+    },
+  });
+}
+
+export function useMarkJobContacted() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => markJobContacted(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
     },

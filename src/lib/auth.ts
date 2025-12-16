@@ -86,7 +86,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!settings) {
           await db.insert(userSettings).values({
             userId: existingUser.id,
-            reminderDays: 7,
+            appliedFollowupDays: 7,
+            interviewFollowupDays: 5,
+            remindersEnabled: 1,
           });
         }
       }

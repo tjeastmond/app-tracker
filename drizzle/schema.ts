@@ -39,7 +39,9 @@ export const userSettings = pgTable("user_settings", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" })
     .primaryKey(),
-  reminderDays: integer("reminder_days").notNull().default(7),
+  appliedFollowupDays: integer("applied_followup_days").notNull().default(7),
+  interviewFollowupDays: integer("interview_followup_days").notNull().default(5),
+  remindersEnabled: integer("reminders_enabled").notNull().default(1),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });
@@ -90,7 +92,8 @@ export const reminders = pgTable("reminders", {
     .notNull()
     .references(() => jobApplications.id, { onDelete: "cascade" }),
   type: reminderTypeEnum("type").notNull().default("FOLLOW_UP"),
-  scheduledFor: timestamp("scheduled_for", { withTimezone: true, mode: "date" }).notNull(),
+  triggerAt: timestamp("trigger_at", { withTimezone: true, mode: "date" }).notNull(),
   sentAt: timestamp("sent_at", { withTimezone: true, mode: "date" }),
+  cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: "date" }),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });

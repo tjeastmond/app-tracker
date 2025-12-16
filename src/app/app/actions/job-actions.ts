@@ -2,10 +2,11 @@
 
 import { requireAppUserId } from "@/lib/require-user";
 import { db } from "@/lib/db";
-import { jobApplications, resumeVersions, userEntitlements } from "@drizzle/schema";
+import { jobApplications, resumeVersions, userEntitlements, reminders } from "@drizzle/schema";
 import { JobCreateSchema, JobUpdateSchema } from "@/lib/validators";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { getJobsNeedingFollowup as getJobsNeedingFollowupLib } from "@/lib/reminder-generator";
 
 export async function listJobs() {
   const userId = await requireAppUserId();
@@ -142,4 +143,47 @@ export async function getJobById(id: string) {
   }
 
   return job;
+}
+
+export async function markJobContacted(jobId: string) {
+  const userId = await requireAppUserId();
+
+  // Update lastTouchedAt on the job
+  const [job] = await db
+    .update(jobApplications)
+    .set({
+      lastTouchedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(
+      and(eq(jobApplications.id, jobId), eq(jobApplications.userId, userId))
+    )
+    .returning();
+
+  if (!job) {
+    throw new Error("Job not found");
+  }
+
+  // Cancel any pending reminders for this job
+  await db
+    .update(reminders)
+    .set({
+      cancelledAt: new Date(),
+    })
+    .where(
+      and(
+        eq(reminders.jobApplicationId, jobId),
+        eq(reminders.userId, userId),
+        isNull(reminders.sentAt),
+        isNull(reminders.cancelledAt)
+      )
+    );
+
+  revalidatePath("/app");
+  return job;
+}
+
+export async function getJobsNeedingFollowup() {
+  const userId = await requireAppUserId();
+  return getJobsNeedingFollowupLib(userId);
 }

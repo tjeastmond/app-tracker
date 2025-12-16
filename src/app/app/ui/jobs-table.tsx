@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { useUpdateJob, type Job } from "../hooks/use-jobs";
 import type { JobCreate } from "@/lib/validators";
@@ -55,14 +55,47 @@ const statusColors: Record<string, string> = {
 export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [showNeedsFollowup, setShowNeedsFollowup] = useState(false);
   const updateJobMutation = useUpdateJob();
+
+  // Calculate which jobs need follow-up (client-side approximation)
+  // In a real implementation, you'd fetch user settings and calculate precisely
+  const jobsNeedingFollowup = useMemo(() => {
+    const now = new Date();
+    const APPLIED_FOLLOWUP_DAYS = 7;
+    const INTERVIEW_FOLLOWUP_DAYS = 5;
+
+    return new Set(
+      jobs
+        .filter((job) => {
+          const daysSinceTouch = Math.floor(
+            (now.getTime() - new Date(job.lastTouchedAt).getTime()) /
+              (1000 * 60 * 60 * 24)
+          );
+
+          if (job.status === "APPLIED") {
+            return daysSinceTouch >= APPLIED_FOLLOWUP_DAYS;
+          } else if (
+            job.status === "RECRUITER_SCREEN" ||
+            job.status === "TECHNICAL" ||
+            job.status === "ONSITE"
+          ) {
+            return daysSinceTouch >= INTERVIEW_FOLLOWUP_DAYS;
+          }
+
+          return false;
+        })
+        .map((job) => job.id)
+    );
+  }, [jobs]);
 
   const filteredJobs = jobs.filter((job) => {
     const matchesSearch =
       job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.role.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "ALL" || job.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesFollowup = !showNeedsFollowup || jobsNeedingFollowup.has(job.id);
+    return matchesSearch && matchesStatus && matchesFollowup;
   });
 
   const handleStatusChange = (jobId: string, newStatus: string) => {
@@ -127,6 +160,18 @@ export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
             ))}
           </SelectContent>
         </Select>
+        <Button
+          variant={showNeedsFollowup ? "default" : "outline"}
+          onClick={() => setShowNeedsFollowup(!showNeedsFollowup)}
+          className={showNeedsFollowup ? "bg-orange-600 hover:bg-orange-700 min-w-[220px]" : "min-w-[220px]"}
+        >
+          {showNeedsFollowup ? "Showing" : "Show"} Needs Follow-up
+          {jobsNeedingFollowup.size > 0 && (
+            <Badge variant="secondary" className="ml-2">
+              {jobsNeedingFollowup.size}
+            </Badge>
+          )}
+        </Button>
         <Button onClick={onAddJob} className="bg-green-600 hover:bg-green-700">
           <Plus className="mr-2 h-4 w-4" />
           Add Job

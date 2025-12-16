@@ -21,6 +21,13 @@ export function NavBar() {
           Job Tracker
         </Link>
         <nav className="flex items-center gap-4">
+          {process.env.NODE_ENV === "development" && (
+            <Link href="/dev/reminders">
+              <Button variant="outline" size="sm">
+                🧪 Test Reminders
+              </Button>
+            </Link>
+          )}
           <Button
             variant="ghost"
             onClick={handleLogout}

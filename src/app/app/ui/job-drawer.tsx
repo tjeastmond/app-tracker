@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { JobCreateSchema, type JobCreate } from "@/lib/validators";
-import { useCreateJob, useUpdateJob, useDeleteJob } from "../hooks/use-jobs";
+import { useCreateJob, useUpdateJob, useDeleteJob, useMarkJobContacted } from "../hooks/use-jobs";
 import {
   Sheet,
   SheetContent,
@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, CheckCircle2 } from "lucide-react";
 
 type Resume = {
   id: string;
@@ -80,12 +80,14 @@ export function JobDrawer({
   const createJobMutation = useCreateJob();
   const updateJobMutation = useUpdateJob();
   const deleteJobMutation = useDeleteJob();
+  const markContactedMutation = useMarkJobContacted();
   const isEdit = !!job;
 
   const isPending =
     createJobMutation.isPending ||
     updateJobMutation.isPending ||
-    deleteJobMutation.isPending;
+    deleteJobMutation.isPending ||
+    markContactedMutation.isPending;
 
   const form = useForm<JobCreate>({
     resolver: zodResolver(JobCreateSchema),
@@ -177,6 +179,22 @@ export function JobDrawer({
       onError: (error) => {
         const errorMessage =
           error instanceof Error ? error.message : "Failed to delete job";
+        alert(errorMessage);
+      },
+    });
+  };
+
+  const handleMarkContacted = () => {
+    if (!job) return;
+
+    markContactedMutation.mutate(job.id, {
+      onSuccess: () => {
+        // Don't close the drawer, just show feedback via the mutation state
+        // The job list will refresh automatically
+      },
+      onError: (error) => {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to mark as contacted";
         alert(errorMessage);
       },
     });
@@ -367,32 +385,52 @@ export function JobDrawer({
               )}
             />
 
-            <div className="flex justify-between pt-4">
-              <div>
-                {isEdit && (
+            <div className="flex flex-col gap-4 pt-4">
+              {isEdit && (
+                <div className="border-t pt-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Mark this job as contacted to update the last touched date and cancel any pending reminders.
+                  </p>
                   <Button
                     type="button"
-                    variant="destructive"
-                    onClick={handleDelete}
+                    variant="outline"
+                    onClick={handleMarkContacted}
+                    disabled={isPending}
+                    className="w-full"
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    {markContactedMutation.isPending ? "Marking..." : "Mark as Contacted"}
+                  </Button>
+                </div>
+              )}
+
+              <div className="flex justify-between">
+                <div>
+                  {isEdit && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={handleDelete}
+                      disabled={isPending}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete
+                    </Button>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
                     disabled={isPending}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete
+                    Cancel
                   </Button>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                  disabled={isPending}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Saving..." : isEdit ? "Update" : "Create"}
-                </Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? "Saving..." : isEdit ? "Update" : "Create"}
+                  </Button>
+                </div>
               </div>
             </div>
           </form>
