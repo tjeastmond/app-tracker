@@ -149,11 +149,11 @@ export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
             {filteredJobs.map((job) => (
               <TableRow
                 key={job.id}
-                className="cursor-pointer hover:bg-muted/50"
+                className="hover:bg-muted/50"
                 onClick={() => onEditJob(job)}
               >
-                <TableCell className="font-medium">{job.company}</TableCell>
-                <TableCell>{job.role}</TableCell>
+                <TableCell className="font-medium cursor-pointer">{job.company}</TableCell>
+                <TableCell className="cursor-pointer">{job.role}</TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Select
                     value={job.status}
@@ -174,13 +174,13 @@ export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
                     </SelectContent>
                   </Select>
                 </TableCell>
-                <TableCell>
+                <TableCell className="cursor-pointer">
                   {job.appliedDate
                     ? format(new Date(job.appliedDate), "MMM d, yyyy")
                     : "-"}
                 </TableCell>
-                <TableCell>{job.resumeName || "-"}</TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="cursor-pointer">{job.resumeName || "-"}</TableCell>
+                <TableCell className="text-muted-foreground cursor-pointer">
                   {format(new Date(job.lastTouchedAt), "MMM d, yyyy")}
                 </TableCell>
               </TableRow>
