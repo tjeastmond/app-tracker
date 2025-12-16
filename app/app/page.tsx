@@ -115,7 +115,7 @@ export default function AppPage() {
         </div>
       )}
 
-      <JobsTable jobs={jobs} onAddJob={handleAddJob} onEditJob={handleEditJob} />
+      <JobsTable jobs={jobs} onAddJob={handleAddJob} onEditJob={handleEditJob} onRefresh={fetchData} />
 
       <JobDrawer
         open={jobDrawerOpen}

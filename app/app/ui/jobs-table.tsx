@@ -43,6 +43,7 @@ type JobsTableProps = {
   jobs: Job[];
   onAddJob: () => void;
   onEditJob: (job: Job) => void;
+  onRefresh: () => void;
 };
 
 const statusOptions = [
@@ -67,7 +68,7 @@ const statusColors: Record<string, string> = {
   GHOSTED: "bg-gray-700",
 };
 
-export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
+export function JobsTable({ jobs, onAddJob, onEditJob, onRefresh }: JobsTableProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [isPending, startTransition] = useTransition();
@@ -98,6 +99,7 @@ export function JobsTable({ jobs, onAddJob, onEditJob }: JobsTableProps) {
           notes: job.notes,
           resumeVersionId: job.resumeVersionId,
         });
+        onRefresh();
       } catch (error) {
         console.error("Failed to update status:", error);
       }

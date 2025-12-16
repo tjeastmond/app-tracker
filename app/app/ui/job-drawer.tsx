@@ -96,7 +96,7 @@ export function JobDrawer({
   });
 
   useEffect(() => {
-    if (job) {
+    if (open && job) {
       form.reset({
         company: job.company,
         role: job.role,
@@ -110,20 +110,9 @@ export function JobDrawer({
         notes: job.notes || "",
         resumeVersionId: job.resumeVersionId || undefined,
       });
-    } else {
-      form.reset({
-        company: "",
-        role: "",
-        location: "",
-        url: "",
-        status: "SAVED",
-        appliedDate: "",
-        salary: "",
-        notes: "",
-        resumeVersionId: undefined,
-      });
     }
-  }, [job, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, job]);
 
   const onSubmit = (data: JobCreate) => {
     startTransition(async () => {
@@ -134,6 +123,7 @@ export function JobDrawer({
           await createJob(data);
         }
         onClose();
+        form.reset();
       } catch (error) {
         // Show error to user
         const errorMessage = error instanceof Error ? error.message : "Failed to save job";
