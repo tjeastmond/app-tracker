@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import type { Provider } from "next-auth/providers";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import Resend from "next-auth/providers/resend";
 import Credentials from "next-auth/providers/credentials";
@@ -7,7 +8,7 @@ import { env } from "./env";
 import { users, userEntitlements, userSettings } from "@/drizzle/schema";
 import { eq } from "drizzle-orm";
 
-const providers: any[] = [
+const providers: Provider[] = [
   Resend({
     apiKey: env.RESEND_API_KEY,
     from: env.EMAIL_FROM,
