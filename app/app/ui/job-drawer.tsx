@@ -149,7 +149,7 @@ export function JobDrawer({
 
   return (
     <Sheet open={open} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-[540px] overflow-y-auto">
+      <SheetContent className="overflow-y-auto">
         <SheetHeader>
           <SheetTitle>{isEdit ? "Edit Job" : "Add New Job"}</SheetTitle>
           <SheetDescription>
