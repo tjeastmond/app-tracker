@@ -39,3 +39,8 @@ next-env.d.ts
 
 # drizzle
 /drizzle/migrations
+
+# test results
+playwright-report/
+test-results/
+.vitest/
