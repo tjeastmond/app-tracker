@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, pgEnum, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, pgEnum, integer, boolean } from "drizzle-orm/pg-core";
 
 // Enums
 export const planEnum = pgEnum("plan", ["FREE", "PAID_LIFETIME"]);
@@ -18,6 +18,7 @@ export const reminderTypeEnum = pgEnum("reminder_type", ["FOLLOW_UP"]);
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   email: text("email").notNull().unique(),
+  isAdmin: boolean("is_admin").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 });

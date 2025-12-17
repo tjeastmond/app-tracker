@@ -40,3 +40,18 @@ export type JobCreate = z.infer<typeof JobCreateSchema>;
 export type JobUpdate = z.infer<typeof JobUpdateSchema>;
 export type ResumeVersionCreate = z.infer<typeof ResumeVersionCreateSchema>;
 export type ResumeVersionUpdate = z.infer<typeof ResumeVersionUpdateSchema>;
+
+// User validation schemas (admin only)
+export const UserCreateSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  isAdmin: z.boolean().optional(),
+});
+
+export const UserUpdateSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email("Invalid email address"),
+  isAdmin: z.boolean(),
+});
+
+export type UserCreate = z.infer<typeof UserCreateSchema>;
+export type UserUpdate = z.infer<typeof UserUpdateSchema>;

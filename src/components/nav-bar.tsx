@@ -1,12 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useTransition, useEffect, useState } from "react";
 import { logout } from "@/app/app/actions/auth-actions";
 import { Button } from "@/components/ui/button";
+import { checkIsAdminAction } from "@/app/app/actions/admin-actions";
 
 export function NavBar() {
   const [isPending, startTransition] = useTransition();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkIsAdminAction().then(setIsAdmin);
+  }, []);
 
   const handleLogout = () => {
     startTransition(async () => {
@@ -31,6 +37,13 @@ export function NavBar() {
               Settings
             </Button>
           </Link>
+          {isAdmin && (
+            <Link href="/admin">
+              <Button variant="outline" size="sm">
+                Admin
+              </Button>
+            </Link>
+          )}
           {process.env.NODE_ENV === "development" && (
             <Link href="/dev/reminders">
               <Button variant="outline" size="sm">
